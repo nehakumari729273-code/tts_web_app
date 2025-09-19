@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Receiver</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        h2 { text-align: center; }
+        #messages { margin-top: 20px; max-height: 70vh; overflow-y: auto; }
+        p { background: #f0f0f0; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
+        button { padding: 10px 20px; font-size: 16px; width: 100%; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Receiver</h2>
+    <button id="startBtn">Start Listening</button>
+    <div id="messages"></div>
+
+    <script>
+        var socket = io();
+
+        var messages = document.getElementById("messages");
+        var queue = [];
+        var listeningEnabled = false;
+
+        function speak(text) {
+            return new Promise(resolve => {
+                let utter = new SpeechSynthesisUtterance(text);
+                utter.rate = 1.0;
+                utter.onend = resolve;
+                speechSynthesis.speak(utter);
+            });
+        }
+
+        async function playQueue() {
+            while (queue.length > 0) {
+                let text = queue.shift();
+                let p = document.createElement('p');
+                p.innerText = "Received: " + text;
+                messages.appendChild(p);
+                messages.scrollTop = messages.scrollHeight;
+                await speak(text);
+            }
+        }
+
+        socket.on('receive_text', function(data) {
+            queue.push(data.text);
+            if (listeningEnabled && queue.length === 1) {
+                playQueue();
+            }
+        });
+
+        document.getElementById("startBtn").addEventListener("click", function() {
+            listeningEnabled = true;
+            if (queue.length > 0) playQueue();
+            this.disabled = true;
+            this.innerText = "Listening...";
+        });
+    </script>
+</body>
+</html>

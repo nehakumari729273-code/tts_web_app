@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sender</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+</head>
+<body>
+    <h2>Sender Page</h2>
+    <textarea id="text" rows="10" cols="50" placeholder="Type one or multiple lines here"></textarea><br><br>
+    <button onclick="sendText()">Send</button>
+
+    <script>
+        // Automatically connect to the same host the page is served from
+        var socket = io();
+
+        function sendText() {
+            let text = document.getElementById("text").value;
+            let lines = text.split('\n').filter(line => line.trim() !== '');
+            lines.forEach(line => {
+                socket.emit('send_text', {'text': line});
+            });
+            document.getElementById("text").value = '';
+        }
+    </script>
+</body>
+</html>
