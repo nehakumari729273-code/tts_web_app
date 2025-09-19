@@ -3,7 +3,7 @@ from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 @app.route('/sender')
 def sender():
@@ -20,5 +20,4 @@ def handle_send_text(data):
     emit('receive_text', {'text': text}, broadcast=True)
 
 if __name__ == '__main__':
-    print("\n--- Server running ---")
     socketio.run(app, host='0.0.0.0', port=5000)
